@@ -1,0 +1,69 @@
+Listado de Enpoints disponibles, una pequeña descripción y los parámetros recibidos.
+
+> Tener en cuenta que para el consumo de todos los enpoints es necesario enviar un jsonwebtoken
+
+## Enpoints para auth
+*Listado de enpoints para poder obtener la autorización y autenticación.*
+
+Permite generar un jsonwebtoken
+
+POST
+```
+/auth/login
+```
+
+## Enpoints para los Servicios
+*Listado de enpoints para poder gestionar y consumir los distintos microservicios.*
+
+- Enpoint para consumir un microservicio, puede ser de cualquier tipo.[GET, POST, DELETE, PATCH, PUT]
+
+ALL
+```
+/service/process
+```
+
+- Regresa una lista de todos los servicios disponibles.
+
+GET
+```
+/service/list
+```
+
+- Permite crear un servicio.
+
+POST
+```
+/service/create
+```
+
+- Permite actualizar un servicio según el ID de este.
+
+PUT
+```
+/service/update/:id
+```
+
+- Permite eliminar un servicio según el id
+
+DELETE
+```
+/service/:id
+```
+
+## Enpoints para manejar los Logs
+*Listado de enpoints para poder gestionar los distintos logs generados al consumir un servicio.*
+
+- Enpoint que permite obtener los logs generados al consumir un servicio, este devuelve paginado el listado.
+
+GET
+```
+/logs/all-logs/:page/:registrosPorPagina
+```
+
+- Enpoint que permite obtener los logs por su status, cuenta con una paginación.
+
+GET
+```
+/logs/logs-by-status/:status/:page/:registrosPorPagina
+```
+
