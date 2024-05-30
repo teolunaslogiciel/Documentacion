@@ -1,0 +1,90 @@
+Documentación de como se realiza la autenticación y autorización.
+
+## Librerías usadas.
+
+#### jsonwebtoken
+*Firma y valida los tokens.*
+#### dotenv
+*Permite leer las variables de entorno.*
+## Firma y creación del jsonwebtoken
+La función **signToken**, recibe como parámetro
+- **payload**. El cual es lo que se quiere enviar dentro del token firmado,
+- **secret**: es la palabra secreta con la cual se genera y decodifica el código.
+
+Código
+```javascript
+const signToken = (payload) => {
+    return jwt.sign(payload, secret);
+}
+```
+
+## Verificación del token.
+Se valida que el token allá sido firmado desde nuestro servidor. Para esto se usa el *secret*.
+
+Parámetros de la función:
+
+**token**:  El token que queremos verificar.
+**secret**: Nuestra palabra secreta.
+
+Retorna un Bolean. 
+**True** para validar indicar que es firmado por nosotros y no fue alterado.
+**False** para indicar que no fue firmado por nuestro servidor o que fue alterado.
+
+```javascript
+const verifyToken = (token) => {
+    const secret = 'secreta';
+    try {
+        const result = jwt.verify(token, secret);
+        return result;
+    } catch (error) {
+        return error.message;
+    }
+}
+```
+
+### Middleware para validar el token.
+
+- 1.- Desde las cabecera de la solicitud se obtiene el campo Authorization, en caso de no venir esta campo y/o no comenzar con Bearer. Se envía una respuesta 401 que no esta autorizad y de que no se ha enviado un Token.
+- 2.- Una vez ya obtenido el token desde cabecera la de la solicitud se valida que el token fue firmado por nosotros. En caso que no fue firmado por nosotros y/o que no esta en la lista de los tokens autorizados se responde con un error 401 de no autorizado.
+- 3.- En caso de que el token sea un token valido(firmado por nosotros) y de que este en la lista de autorizado, se agrega a la cabecera de user que esta verificado. Pudiendo acceder a la función/ruta de destino.
+
+```javascript
+const validateToken = async (req, res, next) => {
+
+    // Se obtiene el token del header
+    const authHeader = req.header('Authorization');
+
+    // Si no hay token, se responde con un error
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ error: 'No se a enviado un token' });
+    }
+
+    // Se obtiene el token, ya que desde el header comineza con 'Bearer ', se toman los primeros 7 caracteres
+
+    const token = authHeader.substring(7);
+
+    try {
+        // Se verifica que el token sea un token firmado por nuestro servidor.
+        const verified = verifyToken(token);
+        const { tokenList } = req;
+        
+        // Se verifica que el token este en la lista de tokens válidos
+        const tokenValid = tokenList.includes(token)
+        
+        if(!tokenValid) {
+            return res.status(401).json({ error: 'No autorizado' });
+        }
+        
+        req.user = verified;
+        next();
+
+    } catch (error) {
+        res.status(400).json({ error: error.message});
+    }
+
+}
+```
+
+Diagrama de flujo
+![[Pasted image 20240530131342.png]]
+
